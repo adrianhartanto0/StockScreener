@@ -4,7 +4,7 @@ const tulind = require('tulind');
 const chalk = require('chalk')
 
 
-module.exports.retrieve = async (symbol, indicatorNames, indicatorPeriods, currentTime, limitQty) => {
+async function retrieve(symbol, indicatorNames, indicatorPeriods, currentTime, limitQty) {
   let dbResponse;
 
   if (limitQty) {
@@ -27,7 +27,7 @@ module.exports.retrieve = async (symbol, indicatorNames, indicatorPeriods, curre
 }
 
 
-module.exports.insert = async (tickerSymbol, name, value, period, currentTime) => {
+async function insert(tickerSymbol, name, value, period, currentTime) {
   await db('indicators')
     .insert({
       symbol: tickerSymbol,
@@ -38,6 +38,7 @@ module.exports.insert = async (tickerSymbol, name, value, period, currentTime) =
     })
 }
 
+module.exports.retrieve = retrieve;
 
 module.exports.calculateIndicator = async (indicator, data, period) => {
   let indicatorFunc;
@@ -50,6 +51,35 @@ module.exports.calculateIndicator = async (indicator, data, period) => {
 
   const indicatorData = await indicatorFunc([data], [period]);
   return utility.roundToOneDecimal(indicatorData.pop().pop());
+}
+
+
+module.exports.saveIndicators = async (tickerSymbol, indicatorName, lastTimestamp, data) => {
+  await Promise.all(data.map(async (indicator) => {
+    const value = indicator.value ? parseInt(indicator.value) : 0;
+    let prevIndicatorTime = 0;
+
+    let prevIndicator = await retrieve(
+      tickerSymbol, indicatorName, [indicator.period], lastTimestamp, 1
+    )
+
+    if (prevIndicator.length && prevIndicator.length === 1) {
+      prevIndicator = prevIndicator.pop();
+      prevIndicatorTime = parseInt(prevIndicator.time);
+    } else {
+      prevIndicatorTime = parseInt(prevIndicator.time);
+    }
+
+    const indicatorDiffDays = utility.getDiffDays(
+      lastTimestamp, prevIndicatorTime * 1000
+    );
+
+    if (indicatorDiffDays > 0) {
+      await insert(
+        tickerSymbol, indicatorName, value, indicator.period, moment().unix()
+      )
+    }
+  }))
 }
 
 

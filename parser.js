@@ -122,34 +122,6 @@ async function loadTechnicalData(pageSymbols) {
 }
 
 
-async function saveIndicators(tickerSymbol, indicatorName, lastTimestamp, data) {
-  await Promise.all(data.map(async (indicator) => {
-    const value = indicator.value ? parseInt(indicator.value) : 0;
-    let prevIndicatorTime = 0;
-
-    let prevIndicator = await indicatorUtility.retrieve(
-      tickerSymbol, indicatorName, [indicator.period], lastTimestamp, 1
-    )
-
-    if (prevIndicator.length && prevIndicator.length === 1) {
-      prevIndicator = prevIndicator.pop();
-      prevIndicatorTime = parseInt(prevIndicator.time);
-    } else {
-      prevIndicatorTime = parseInt(prevIndicator.time);
-    }
-
-    const indicatorDiffDays = utility.getDiffDays(
-      lastTimestamp, prevIndicatorTime * 1000
-    );
-
-    if (indicatorDiffDays > 0) {
-      await indicatorUtility.insert(
-        tickerSymbol, indicatorName, value, indicator.period, moment().unix()
-      )
-    }
-  }))
-}
-
 async function renderData(page, symbolData, promptAnswers) {
   const startCounter = (page * maxContentCount);
   const tempMaxCount = (startCounter + maxContentCount);
@@ -195,7 +167,7 @@ async function renderData(page, symbolData, promptAnswers) {
         pageSymbol, indicator, lastTickerTimestamp, data
       )
 
-      await saveIndicators(
+      await indicatorUtility.saveIndicators(
         pageSymbol, indicator, lastTickerTimestamp, data
       );
 
