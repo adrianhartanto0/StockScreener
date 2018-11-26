@@ -27,6 +27,18 @@ module.exports.retrieve = async (symbol, indicatorNames, indicatorPeriods, curre
 }
 
 
+module.exports.insert = async (tickerSymbol, name, value, period, currentTime) => {
+  await db('indicators')
+    .insert({
+      symbol: tickerSymbol,
+      indicatorName: name,
+      indicatorValue: value,
+      indicatorPeriod: period,
+      time: currentTime,
+    })
+}
+
+
 module.exports.calculateIndicator = async (indicator, data, period) => {
   let indicatorFunc;
 
@@ -51,18 +63,6 @@ module.exports.isIndicatorsCross = (indicatorLow, indicatorHigh) => {
   }
 
   return crossText;
-}
-
-
-module.exports.insert = async (tickerSymbol, name, value, period, currentTime) => {
-  await db('indicators')
-    .insert({
-      symbol: tickerSymbol,
-      indicatorName: name,
-      indicatorValue: value,
-      indicatorPeriod: period,
-      time: currentTime,
-    })
 }
 
 
