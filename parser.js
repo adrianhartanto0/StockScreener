@@ -12,10 +12,10 @@ const _ = require('lodash');
 const indicatorUtility = require('./indicatorUtility');
 const tickerUtility = require('./tickerUtility');
 const utility = require('./utility');
+const crossUtility = require('./crossUtility');
 
 const maxContentCount = 35;
 process.stdin.setRawMode(true);
-
 
 async function askPrompt() {
   const questions = [
@@ -121,78 +121,6 @@ async function loadTechnicalData(pageSymbols) {
   }, {}); 
 }
 
-function getIndicatorValue(tickerData) {
-  if (tickerData !== null) {
-    return utility.roundToOneDecimal(tickerData.indicatorValue);
-  } else {
-    return null;
-  }
-}
-
-function calculateCrossChange(currentLow, currentHigh, prevLow, prevHigh) {
-  const currCrossValue = currentLow - currentHigh;
-  let prevCrossValue = currCrossValue;
-
-  if (prevLow && prevHigh) {
-    prevCrossValue = prevLow - prevHigh;
-  }
-
-  let change = utility.roundToOneDecimal(currCrossValue - prevCrossValue);
-
-  if (change > 0) {
-    change = chalk.bgGreen(change);
-  } else if (change < 0) {
-    change = chalk.bgRed(change);
-  }
-
-  return change
-}
-
-async function getCrossChange(tickerSymbol, indicatorName, lastTickerTimestamp, data) {
-  
-  // Render prev indicator cross change
-  const lowData = data[0];
-  const highData = data[1];
-  const periods = [lowData.period, highData.period]
-
-  const dbIndicators = await indicatorUtility.retrieve(
-    tickerSymbol, indicatorName, periods, lastTickerTimestamp
-  );
-
-  const filteredDBIndicators = [];
-
-  periods.forEach(period => {
-    const periodIndicators = dbIndicators.filter(indicator => (
-      parseInt(indicator.indicatorPeriod) === period
-    ))
-
-    for(let i = 0; i < periodIndicators.length; i += 1){
-      const dbIndicatorPeriod = parseInt(periodIndicators[i].time) * 1000;
-      const hour = utility.getDiffDays(lastTickerTimestamp, dbIndicatorPeriod, 'hour')
-      
-      if (hour > 0) {
-        filteredDBIndicators.push(_.cloneDeep(periodIndicators[i]))
-        break;
-      }
-    }
-  })
-
-  const prevLow = indicatorUtility.filter(
-    filteredDBIndicators, indicatorName, lowData.period
-  );
-
-  const prevHigh = indicatorUtility.filter(
-    filteredDBIndicators, indicatorName, highData.period
-  );
-
-  const crossChangeValue = calculateCrossChange(
-    lowData.value, highData.value,
-    getIndicatorValue(prevLow),
-    getIndicatorValue(prevHigh)
-  )
-
-  return crossChangeValue
-}
 
 async function saveIndicators(tickerSymbol, indicatorName, lastTimestamp, data) {
   await Promise.all(data.map(async (indicator) => {
@@ -254,14 +182,16 @@ async function renderData(page, symbolData, promptAnswers) {
         indicator, close, promptAnswers[indicator].high
       );
 
-      const isCrossover = indicatorUtility.isIndicatorsCross(indicatorLow, indicatorHigh);
+      const isCrossover = indicatorUtility.isIndicatorsCross(
+        indicatorLow, indicatorHigh
+      );
 
       const data = [
         { value: indicatorLow, period: promptAnswers[indicator].low },
         { value: indicatorHigh, period: promptAnswers[indicator].high },     
       ]
 
-      const crossChangeValue = await getCrossChange(
+      const crossChangeValue = await crossUtility.getCrossChange(
         pageSymbol, indicator, lastTickerTimestamp, data
       )
 
