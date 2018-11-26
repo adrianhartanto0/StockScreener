@@ -66,6 +66,17 @@ module.exports.isIndicatorsCross = (indicatorLow, indicatorHigh) => {
 }
 
 
+module.exports.getIndicatorValue = (tickerData) => {
+  let value = null;
+
+  if (tickerData !== null) {
+    return utility.roundToOneDecimal(tickerData.indicatorValue)
+  }
+
+  return value;
+}
+
+
 module.exports.filter = (data, indicatorName, indicatorPeriod) => {
   const filteredData = data.filter(tickerData => 
     tickerData.indicatorName === indicatorName && tickerData.indicatorPeriod == indicatorPeriod
