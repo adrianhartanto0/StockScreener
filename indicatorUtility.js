@@ -1,4 +1,6 @@
 const db = require('./db');
+const utility = require('./utility');
+const tulind = require('tulind');
 
 module.exports.retrieve = async (symbol, indicatorNames, indicatorPeriods, currentTime, limitQty) => {
 
@@ -22,6 +24,21 @@ module.exports.retrieve = async (symbol, indicatorNames, indicatorPeriods, curre
 
   return dbResponse
 }
+
+
+module.exports.calculateIndicator = async (indicator, data, period) => {
+  let indicatorFunc;
+
+  if (indicator === 'sma') {
+    indicatorFunc = tulind.indicators.sma.indicator;
+  } else if (indicator === 'dema') {
+    indicatorFunc = tulind.indicators.dema.indicator;
+  }
+
+  const indicatorData = await indicatorFunc([data], [period]);
+  return utility.roundToOneDecimal(indicatorData.pop().pop());
+}
+
 
 module.exports.insert = async (tickerSymbol, name, value, period, currentTime) => {
   await db('indicators')

@@ -122,20 +122,6 @@ async function loadTechnicalData(pageSymbols) {
   }, {}); 
 }
 
-async function calculateIndicator(indicator, data, period) {
-
-  let indicatorFunc;
-
-  if (indicator === 'sma') {
-    indicatorFunc = tulind.indicators.sma.indicator;
-  } else if (indicator === 'dema') {
-    indicatorFunc = tulind.indicators.dema.indicator;
-  }
-
-  const indicatorData = await indicatorFunc([data], [period]);
-  return utility.roundToOneDecimal(indicatorData.pop().pop());
-}
-
 function getIndicatorValue(tickerData) {
   if (tickerData !== null) {
     return utility.roundToOneDecimal(tickerData.indicatorValue);
@@ -273,11 +259,11 @@ async function renderData(page, symbolData, promptAnswers) {
 
     await Promise.all(indicators.map(async (indicator) => {
       // Indicator value
-      const indicatorLow = await calculateIndicator(
+      const indicatorLow = await indicatorUtility.calculateIndicator(
         indicator, close, promptAnswers[indicator].low
       );
 
-      const indicatorHigh = await calculateIndicator(
+      const indicatorHigh = await indicatorUtility.calculateIndicator(
         indicator, close, promptAnswers[indicator].high
       );
 
