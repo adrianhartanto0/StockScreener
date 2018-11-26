@@ -1,9 +1,10 @@
 const db = require('./db');
 const utility = require('./utility');
 const tulind = require('tulind');
+const chalk = require('chalk')
+
 
 module.exports.retrieve = async (symbol, indicatorNames, indicatorPeriods, currentTime, limitQty) => {
-
   let dbResponse;
 
   if (limitQty) {
@@ -40,6 +41,19 @@ module.exports.calculateIndicator = async (indicator, data, period) => {
 }
 
 
+module.exports.isIndicatorsCross = (indicatorLow, indicatorHigh) => {
+  let crossText;
+
+  if (indicatorLow > indicatorHigh) {
+    crossText = chalk.bold.bgGreen('YES'); 
+  } else {
+    crossText = chalk.bold.bgRed('NO');
+  }
+
+  return crossText;
+}
+
+
 module.exports.insert = async (tickerSymbol, name, value, period, currentTime) => {
   await db('indicators')
     .insert({
@@ -50,6 +64,7 @@ module.exports.insert = async (tickerSymbol, name, value, period, currentTime) =
       time: currentTime,
     })
 }
+
 
 module.exports.filter = (data, indicatorName, indicatorPeriod) => {
   const filteredData = data.filter(tickerData => 

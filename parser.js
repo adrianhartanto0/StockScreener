@@ -1,7 +1,6 @@
 const fs = require('fs');
 const Table = require('cli-table2');
 const chalk = require('chalk')
-const tulind = require('tulind');
 const inquirer = require('inquirer');
 const ora = require('ora');
 const axios = require('axios');
@@ -149,18 +148,6 @@ function calculateCrossChange(currentLow, currentHigh, prevLow, prevHigh) {
   return change
 }
 
-function getIndicatorsCross(indicatorLow, indicatorHigh) {
-  let crossText;
-
-  if (indicatorLow > indicatorHigh) {
-    crossText = chalk.bold.bgGreen('YES'); 
-  } else {
-    crossText = chalk.bold.bgRed('NO');
-  } 
-
-  return crossText;
-}
-
 async function getCrossChange(tickerSymbol, indicatorName, lastTickerTimestamp, data) {
   
   // Render prev indicator cross change
@@ -267,7 +254,7 @@ async function renderData(page, symbolData, promptAnswers) {
         indicator, close, promptAnswers[indicator].high
       );
 
-      const crossover = getIndicatorsCross(indicatorLow, indicatorHigh);
+      const isCrossover = indicatorUtility.isIndicatorsCross(indicatorLow, indicatorHigh);
 
       const data = [
         { value: indicatorLow, period: promptAnswers[indicator].low },
@@ -290,7 +277,7 @@ async function renderData(page, symbolData, promptAnswers) {
       )
 
       value[pageSymbol].push(crossChangeValue)
-      value[pageSymbol].push(crossover);
+      value[pageSymbol].push(isCrossover);
     }))
 
     return value
