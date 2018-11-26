@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const fs = require('fs');
 const Table = require('cli-table2');
 const chalk = require('chalk')
@@ -14,7 +16,7 @@ const tickerUtility = require('./tickerUtility');
 const utility = require('./utility');
 const crossUtility = require('./crossUtility');
 
-const maxContentCount = 35;
+const maxContentCount = process.env.CONTENT_COUNT;
 process.stdin.setRawMode(true);
 
 async function askPrompt() {
@@ -63,7 +65,7 @@ async function loadTechnicalData(pageSymbols) {
   const priceRequestPromises = pageSymbols.map(async (symbol) => {
     const response = await axios({
       method:'get',
-      url:'',
+      url:process.env.DATA_URL,
       params: {
         code: symbol,
         start: last6Month,
