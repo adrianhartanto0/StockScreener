@@ -275,7 +275,10 @@ async function main() {
   process.stdin.resume()
 }
 
-main();
+
+if(utility.checkEnvVariable()){
+  main();
+}
 
 
 
