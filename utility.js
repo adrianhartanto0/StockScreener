@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const moment = require('moment');
+const chalk = require('chalk');
 
 
 module.exports.getDiffDays = (timeOne, timeTwo, key) => {
@@ -19,6 +20,19 @@ module.exports.getDiffDays = (timeOne, timeTwo, key) => {
 
 module.exports.roundToOneDecimal = (num) => {
   return Math.round(num * 10) / 10;
+}
+
+module.exports.highlightNumber = (num) => {
+
+  let newNum = num;
+
+  if (num > 0) {
+    newNum = chalk.bold.bgGreen(`+${Math.abs(num)}%`);
+  } else if (num < 0){
+    newNum = chalk.bold.bgRed(`-${Math.abs(num)}%`);
+  }
+
+  return newNum;
 }
 
 module.exports.checkEnvVariable = () => {
