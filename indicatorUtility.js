@@ -1,7 +1,8 @@
 const db = require('./db');
 const utility = require('./utility');
 const tulind = require('tulind');
-const chalk = require('chalk')
+const chalk = require('chalk');
+const moment = require('moment');
 
 
 async function retrieve(symbol, indicatorNames, indicatorPeriods, currentTime, limitQty) {
@@ -47,9 +48,11 @@ module.exports.calculateIndicator = async (indicator, data, period) => {
     indicatorFunc = tulind.indicators.sma.indicator;
   } else if (indicator === 'dema') {
     indicatorFunc = tulind.indicators.dema.indicator;
+  } else if (indicator === 'cci') {
+    indicatorFunc = tulind.indicators.cci.indicator;
   }
 
-  const indicatorData = await indicatorFunc([data], [period]);
+  const indicatorData = await indicatorFunc(data, [period]);
   return utility.roundToOneDecimal(indicatorData.pop().pop());
 }
 
@@ -63,15 +66,15 @@ module.exports.saveIndicators = async (tickerSymbol, indicatorName, lastTimestam
       tickerSymbol, indicatorName, [indicator.period], lastTimestamp, 1
     )
 
-    if (prevIndicator.length && prevIndicator.length === 1) {
+    if (prevIndicator.length === 1) {
       prevIndicator = prevIndicator.pop();
       prevIndicatorTime = parseInt(prevIndicator.time);
-    } else {
-      prevIndicatorTime = parseInt(prevIndicator.time);
+    } else if (prevIndicator.length === 0) {
+      prevIndicatorTime = 0;
     }
 
     const indicatorDiffDays = utility.getDiffDays(
-      lastTimestamp, prevIndicatorTime * 1000
+      lastTimestamp, prevIndicatorTime * 1000, 'hour'
     );
 
     if (indicatorDiffDays > 0) {
