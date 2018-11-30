@@ -15,9 +15,9 @@ function calculateCrossChange(currentLow, currentHigh, prevLow, prevHigh) {
   let change = utility.roundToOneDecimal(currCrossValue - prevCrossValue);
 
   if (change > 0) {
-    change = chalk.bgGreen(change);
+    change = chalk.bold.bgGreen(change);
   } else if (change < 0) {
-    change = chalk.bgRed(change);
+    change = chalk.bold.bgRed(change);
   }
 
   return change
