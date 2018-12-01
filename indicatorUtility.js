@@ -43,6 +43,7 @@ module.exports.retrieve = retrieve;
 
 module.exports.calculateIndicator = async (indicator, data, period) => {
   let indicatorFunc;
+  let indicatorData;
 
   if (indicator === 'sma') {
     indicatorFunc = tulind.indicators.sma.indicator;
@@ -50,9 +51,17 @@ module.exports.calculateIndicator = async (indicator, data, period) => {
     indicatorFunc = tulind.indicators.dema.indicator;
   } else if (indicator === 'cci') {
     indicatorFunc = tulind.indicators.cci.indicator;
+  } else if (indicator === 'ao') {
+    indicatorFunc = tulind.indicators.ao.indicator
   }
 
-  const indicatorData = await indicatorFunc(data, [period]);
+
+  if (period) {
+    indicatorData = await indicatorFunc(data, [period]);
+  } else {
+    indicatorData = await indicatorFunc(data, []);
+  }
+
   return utility.roundToOneDecimal(indicatorData.pop().pop());
 }
 
