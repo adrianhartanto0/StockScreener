@@ -54,3 +54,24 @@ module.exports.checkEnvVariable = () => {
 
   return true
 }
+
+module.exports.highlightDemaDiff = (num) => {
+  
+  let newNum = num;
+
+  if (num > 4) {
+    newNum = chalk.bold.bgMagenta(num);
+  }
+  
+  if (num > 10) {
+    newNum = chalk.bold.bgYellow(num);
+  } 
+  
+  if (num > 100) {
+    newNum = chalk.bold.bgRed(num);
+  }
+
+  return newNum;
+}
+
+
